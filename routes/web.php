@@ -1,6 +1,9 @@
 <?php
 
+use Illuminate\Foundation\Application;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +17,35 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
 });
+
+Route::get('/dashboard', function (Request $request) {
+    $webauthnKeys = $request->user()->webauthnKeys()
+        ->get()
+        ->map(function ($key) {
+            return [
+                'id' => $key->id,
+                'name' => $key->name,
+                'type' => $key->type,
+                'last_active' => $key->updated_at->diffForHumans(),
+            ];
+        })
+        ->toArray();
+
+    return Inertia::render('Dashboard', [
+        'webauthnKeys' => $webauthnKeys,
+    ]);
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/x/login', function() {
+    auth()->login(\App\Models\User::get()->first());
+    return redirect('/dashboard');
+});
+
+require __DIR__ . '/auth.php';
