@@ -61,9 +61,14 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
+            'driver' => 'webauthn',
             'model' => App\Models\User::class,
         ],
+
+        //'users' => [
+        //    'driver' => 'eloquent',
+        //    'model' => App\Models\User::class,
+        //],
 
         // 'users' => [
         //     'driver' => 'database',

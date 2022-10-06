@@ -65,5 +65,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'webauthn' => \LaravelWebauthn\Http\Middleware\WebauthnMiddleware::class,
+        'webauthn.remember' => \App\Http\Middleware\CheckUserHasWebauthnKeys::class,
+        'webauthn.login' => \App\Http\Middleware\CheckUserCanLoginWithWebauthn::class,
     ];
 }

@@ -26,25 +26,42 @@ const getOptions = () => {
     axios
         .post('/webauthn/keys/options')
         .then(response => {
+            console.log('getting options', response.data);
             createKey(response.data.publicKey);
         })
-        .catch(console.error);
+        .catch(console.log);
 }
 
 const createKey = (publicKeyCredentialCreationOptions) => {
     console.log(publicKeyCredentialCreationOptions);
     const challenge = Uint8Array.from(base64UrlDecode(publicKeyCredentialCreationOptions.challenge), c => c.charCodeAt(0));
-    const userId = Uint8Array.from(window.atob(publicKeyCredentialCreationOptions.user.id), c => c.charCodeAt(0));
+    const userId = Uint8Array.from(base64UrlDecode(publicKeyCredentialCreationOptions.user.id), c => c.charCodeAt(0));
+    let excludeCredentials;
+
+    if(publicKeyCredentialCreationOptions.excludeCredentials){
+        excludeCredentials = publicKeyCredentialCreationOptions?.excludeCredentials.map(item => {
+                return {
+                ...item,
+                id: Uint8Array.from(base64UrlDecode(item.id), c => c.charCodeAt(0)),
+            };
+        });
+    }
+
+    let publicKey = {
+        ...publicKeyCredentialCreationOptions,
+        user: {
+            ...publicKeyCredentialCreationOptions.user,
+            id: userId,
+        },
+        challenge: challenge,
+    };
+
+    if(excludeCredentials != null) {
+        publicKey.excludeCredentials = excludeCredentials;
+    }
 
     navigator.credentials.create({
-        publicKey: {
-            ...publicKeyCredentialCreationOptions,
-            user: {
-                ...publicKeyCredentialCreationOptions.user,
-                id: userId,
-            },
-            challenge: challenge 
-        },
+        publicKey,
     })
     .then(credential => {
         const utf8Decoder = new TextDecoder('utf-8');
@@ -67,6 +84,7 @@ const createKey = (publicKeyCredentialCreationOptions) => {
             .post('/webauthn/keys', AuthAttestationResponse);
     })
     .then(console.log)
+    .catch(console.error);
 }
 
 </script>

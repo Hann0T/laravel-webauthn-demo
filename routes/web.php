@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\CustomLoginController;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use LaravelWebauthn\Actions\PrepareAssertionData;
 
 /*
 |--------------------------------------------------------------------------
@@ -43,9 +45,16 @@ Route::get('/dashboard', function (Request $request) {
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::get('/x/login', function() {
+Route::get('/auto/login', function () {
     auth()->login(\App\Models\User::get()->first());
     return redirect('/dashboard');
+});
+
+Route::prefix('webauthn')->group(function () {
+    Route::get('/login', [CustomLoginController::class, 'index'])->name('webauthn.login');
+
+    Route::get('/remember', [CustomLoginController::class, 'webAuthnRemember'])
+        ->middleware('webauthn.remember');
 });
 
 require __DIR__ . '/auth.php';

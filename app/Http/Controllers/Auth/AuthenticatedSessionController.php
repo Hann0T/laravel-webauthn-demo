@@ -12,6 +12,11 @@ use Inertia\Inertia;
 
 class AuthenticatedSessionController extends Controller
 {
+    function __construct()
+    {
+        $this->middleware('webauthn.login')->only('create');
+    }
+
     /**
      * Display the login view.
      *
